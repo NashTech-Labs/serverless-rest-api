@@ -1,0 +1,79 @@
+service: serverless-rest-api
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: ap-northeast-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: arn:aws:dynamodb:ap-northeast-1:*:*
+
+resources:
+  Resources:
+    UsersTable:
+      Type: 'AWS::DynamoDB::Table'
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: id
+            AttributeType: S
+        KeySchema:
+          -
+            AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: 'users'
+
+functions:
+  create:
+    handler: src/handler/createUser.createUser
+    events:
+      - http:
+          path: users
+          method: post
+          cors: true
+  
+  list:
+    handler: src/handler/listUser.listUser
+    events:
+      - http:
+          path: users
+          method: get
+          cors: true
+          
+  get:
+    handler: src/handler/getUser.getUser
+    events:
+      - http:
+          path: users/{id}
+          method: get
+          cors: true
+
+  update:
+    handler: src/handler/updateUser.updateUser
+    events:
+      - http:
+          path: users/{id}
+          method: put
+          cors: true
+
+  delete:
+    handler: src/handler/deleteUser.deleteUser
+    events:
+      - http:
+          path: users/{id}
+          method: delete
+          cors: true
+
